@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en" xml:lang="en">
+<head>
+    <title>Data Lists</title>
+</head>
+<body>
+    <h1>Data Lists</h1>
+    <ul>
+        <li th:each="table : ${tables}">
+            <span th:text="${table.tableName}"></span>
+            <a th:href="@{/edit-table(id=${table.id})}"><button>Edit</button></a>
+        </li>
+    </ul>
+    <a href="/create-table"><button>Create New Table</button></a>
+</body>
+</html>
