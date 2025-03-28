@@ -1,40 +1,39 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en" xml:lang="en">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Table</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="/css/styles.css" rel="stylesheet">
 </head>
 <body>
-    <!-- Include the navbar -->
     <div th:replace="~{fragments/fragments :: navbar}"></div>
 
     <div class="container">
-        <h1 th:text="${table.tableName != null and table.tableName != '' ? table.tableName : 'Unnamed Table'}"></h1>
+        <h1 class="page-title" th:text="${table.tableName != null and table.tableName != '' ? table.tableName : 'Unnamed Table'}"></h1>
 
-        <div class="card">
+        <div class="card modern-card">
             <div class="card-header">
                 <i class="bi bi-table me-2"></i>Table Data
             </div>
             <div class="card-body">
-                <!-- Back Button -->
-                <a href="/dashboard" class="btn btn-secondary mb-3">
-                    <i class="bi bi-arrow-left me-1"></i>Back
-                </a>
+                <div class="button-group mb-3">
+                    <a href="/dashboard" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>Back
+                    </a>
+                    <a th:href="@{/add-data/{id}(id=${table.id})}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-1"></i>Add Data
+                    </a>
+                </div>
 
-                <!-- Add Data button -->
-                <a th:href="@{/add-data/{id}(id=${table.id})}" class="btn btn-primary mb-3">
-                    <i class="bi bi-plus-circle me-1"></i>Add Data
-                </a>
-
-                <!-- Display error message if present -->
                 <div th:if="${errorMessage}" class="alert alert-warning" role="alert">
                     <span th:text="${errorMessage}"></span>
                 </div>
 
-                <!-- Table only if fields exist -->
-                <div class="table-responsive">
-                    <table class="table table-hover" th:if="${table.fields != null and #strings.length(table.fields) > 0}">
+                <div class="table-responsive" th:if="${table.fields != null and #strings.length(table.fields) > 0}">
+                    <table class="table modern-table">
                         <thead>
                             <tr>
                                 <th th:each="field : ${table.fields.split(',')}" th:text="${field.trim()}"></th>
@@ -45,7 +44,7 @@
                             <tr th:each="row : ${rows}" th:if="${rows != null and #lists.size(rows) > 0}">
                                 <td th:each="field : ${table.fields.split(',')}" th:text="${row[field.trim()]}"></td>
                                 <td>
-                                    <form th:action="@{/delete-data/{tableId}/{rowId}(tableId=${table.id}, rowId=${row['StudentID']})}" method="post" style="display:inline;">
+                                    <form th:action="@{/delete-data/{tableId}/{rowId}(tableId=${table.id}, rowId=${row['id']})}" method="post" style="display:inline;">
                                         <button type="submit" class="btn btn-danger btn-sm">
                                             <i class="bi bi-trash me-1"></i>Delete
                                         </button>
@@ -59,7 +58,6 @@
                     </table>
                 </div>
 
-                <!-- Message if no fields -->
                 <p th:unless="${table.fields != null and #strings.length(table.fields) > 0}" class="text-muted">
                     No fields defined for this table.
                 </p>
