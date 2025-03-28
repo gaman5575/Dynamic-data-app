@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
-
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -19,12 +18,9 @@ public class UserService {
     }
 
     public boolean registerUser(String username, String password) {
-        // Check if username already exists
         if (userRepository.findByUsername(username).isPresent()) {
-            return false; // Username already taken
+            return false; // Username already exists
         }
-
-        // Encode the password and save the user
         User user = new User(username, passwordEncoder.encode(password));
         userRepository.save(user);
         return true;

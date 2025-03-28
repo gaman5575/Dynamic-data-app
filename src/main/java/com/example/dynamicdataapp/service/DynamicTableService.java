@@ -1,24 +1,12 @@
 package com.example.dynamicdataapp.service;
 
+import com.example.dynamicdataapp.exception.TableCreationException;
+import com.example.dynamicdataapp.model.TableDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
-
-import com.example.dynamicdataapp.model.*;
-
-class TableCreationException extends RuntimeException {
-    public TableCreationException(String message, Throwable cause) {
-        super(message, cause);
-    }
-}
-
-class TableDeletionException extends RuntimeException {
-    public TableDeletionException(String message, Throwable cause) {
-        super(message, cause);
-    }
-}
 
 @Service
 public class DynamicTableService {
@@ -32,44 +20,41 @@ public class DynamicTableService {
     }
 
     public void createTable(TableDefinition tableDefinition) {
-        try {
-            String rawTableName = tableDefinition.getTableName().toLowerCase();
-            String tableName = sanitizeTableName(rawTableName);
-            String[] fields = tableDefinition.getFields().split(",");
-            StringBuilder sql = new StringBuilder("CREATE TABLE IF NOT EXISTS `" + tableName + "` (");
-            for (int i = 0; i < fields.length; i++) {
-                String field = fields[i].trim();
-                sql.append("`").append(field).append("` VARCHAR(255)");
-                if (i < fields.length - 1) {
-                    sql.append(", ");
-                }
+        String tableName = sanitizeTableName(tableDefinition.getTableName().toLowerCase());
+        String[] fields = tableDefinition.getFields().split(",");
+        StringBuilder sql = new StringBuilder("CREATE TABLE IF NOT EXISTS `" + tableName + "` (");
+        sql.append("`id` BIGINT AUTO_INCREMENT PRIMARY KEY, "); // Add an ID column for each table
+        for (int i = 0; i < fields.length; i++) {
+            String field = fields[i].trim();
+            sql.append("`").append(field).append("` VARCHAR(255)");
+            if (i < fields.length - 1) {
+                sql.append(", ");
             }
-            sql.append(")");
-            logger.info("Executing SQL to create table: {}", sql);
+        }
+        sql.append(")");
+        try {
             jdbcTemplate.execute(sql.toString());
-            logger.info("Successfully created table: {}", tableName);
+            logger.info("Created table: {}", tableName);
         } catch (Exception e) {
-            String errorMessage = String.format("Failed to create table '%s': %s", tableDefinition.getTableName(), e.getMessage());
-            logger.error(errorMessage, e);
-            throw new TableCreationException(errorMessage, e);
+            logger.error("Failed to create table '{}': {}", tableName, e.getMessage());
+            throw new TableCreationException("Failed to create table: " + tableName);
         }
     }
 
     public void deleteTable(String tableName) {
+        String sanitizedTableName = sanitizeTableName(tableName.toLowerCase());
+        String sql = "DROP TABLE IF EXISTS `" + sanitizedTableName + "`";
         try {
-            String sanitizedTableName = sanitizeTableName(tableName.toLowerCase());
-            String sql = "DROP TABLE IF EXISTS `" + sanitizedTableName + "`";
-            logger.info("Executing SQL to delete table: {}", sql);
             jdbcTemplate.execute(sql);
-            logger.info("Successfully deleted table: {}", sanitizedTableName);
+            logger.info("Dropped table: {}", sanitizedTableName);
         } catch (Exception e) {
-            String errorMessage = String.format("Failed to delete table '%s': %s", tableName, e.getMessage());
-            logger.error(errorMessage, e);
-            throw new TableDeletionException(errorMessage, e);
+            logger.error("Failed to drop table '{}': {}", sanitizedTableName, e.getMessage());
+            throw new TableCreationException("Failed to drop table: " + sanitizedTableName);
         }
     }
 
     public String sanitizeTableName(String tableName) {
-        return tableName.replaceAll("\\W", "_").trim();
+        return tableName.replaceAll("\\W", "");
     }
+
 }

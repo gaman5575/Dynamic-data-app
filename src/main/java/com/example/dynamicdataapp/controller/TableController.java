@@ -226,11 +226,11 @@ public class TableController {
         String tableName = dynamicTableService.sanitizeTableName(table.getTableName().toLowerCase());
         
         try {
-            String deleteSql = "DELETE FROM `" + tableName + "` WHERE StudentID = ?";
-            jdbcTemplate.update(deleteSql, rowId);
-            logger.info("Deleted row with StudentID '{}' from table '{}'", rowId, tableName);
+            String deleteSql = "DELETE FROM `" + tableName + "` WHERE id = ?";
+            jdbcTemplate.update(deleteSql, Long.parseLong(rowId)); // Assuming rowId is the ID
+            logger.info("Deleted row with id '{}' from table '{}'", rowId, tableName);
         } catch (Exception e) {
-            logger.error("Failed to delete row with StudentID '{}' from table '{}': {}", rowId, tableName, e.getMessage(), e);
+            logger.error("Failed to delete row with id '{}' from table '{}': {}", rowId, tableName, e.getMessage(), e);
             return ERROR_VIEW;
         }
         
